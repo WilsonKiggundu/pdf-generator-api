@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Protocols;
+
+namespace PdfGenerator.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PdfController : ControllerBase 
+    {
+        [HttpGet]
+        public string Index()
+        {
+            return "";
+        }
+
+        [HttpPost]
+        public ActionResult<byte[]> Generate([FromBody] string html) 
+        {
+            var workStream = new MemoryStream();
+            var byteInfo = workStream.ToArray();
+            workStream.Write(byteInfo, 0, byteInfo.Length);
+            workStream.Position = 0;
+
+            var converter = new SelectPdf.HtmlToPdf
+            {
+                Options =
+                {
+                    DisplayHeader = true,
+                    DisplayFooter = true,
+                    MarginLeft = 20,
+                    MarginRight = 20,
+                    MaxPageLoadTime = 200,
+                    EmbedFonts = true
+                }
+            };
+
+            var doc = converter.ConvertHtmlString(html);
+            doc.Save(workStream);
+            doc.Close();
+
+            return workStream.ToArray();
+        }
+
+    }
+}
