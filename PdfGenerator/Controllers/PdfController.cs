@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols;
 
@@ -14,14 +15,21 @@ namespace PdfGenerator.Controllers
     [ApiController]
     public class PdfController : ControllerBase 
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        public PdfController(IHostingEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
+        }
+
         [HttpGet]
         public string Index()
         {
-            return "";
+            return "Pdf Generator";
         }
 
         [HttpPost]
-        public ActionResult<byte[]> Generate([FromBody] string html) 
+        public ActionResult<string> Generate([FromBody] string html) 
         {
             var workStream = new MemoryStream();
             var byteInfo = workStream.ToArray();
@@ -42,10 +50,15 @@ namespace PdfGenerator.Controllers
             };
 
             var doc = converter.ConvertHtmlString(html);
-            doc.Save(workStream);
+
+            var contentRoot = _hostingEnvironment.ContentRootPath;
+
+            var path = Path.Combine(contentRoot, $"docs/test-{DateTime.Now:yy-MMM-dd ddd}.pdf");
+
+            doc.Save(path);
             doc.Close();
 
-            return workStream.ToArray();
+            return path;
         }
 
     }
