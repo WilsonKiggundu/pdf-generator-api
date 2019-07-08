@@ -22,7 +22,7 @@ namespace PdfGenerator.Controllers
         }
 
         [HttpPost]
-        public ActionResult<byte[]> Generate([FromBody] string html) 
+        public ActionResult<string> Generate([FromBody] string html) 
         {
             var workStream = new MemoryStream();
             var byteInfo = workStream.ToArray();
@@ -42,11 +42,13 @@ namespace PdfGenerator.Controllers
                 }
             };
 
+            var filename = $"{Guid.NewGuid()}.pdf";
             var doc = converter.ConvertHtmlString(html);
-            doc.Save(workStream);
+
+            doc.Save(filename);
             doc.Close();
 
-            return workStream.ToArray();
+            return filename;
         }
 
     }
