@@ -15,13 +15,6 @@ namespace PdfGenerator.Controllers
     [ApiController]
     public class PdfController : ControllerBase 
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
-
-        public PdfController(IHostingEnvironment hostingEnvironment)
-        {
-            _hostingEnvironment = hostingEnvironment;
-        }
-
         [HttpGet]
         public string Index()
         {
@@ -29,7 +22,7 @@ namespace PdfGenerator.Controllers
         }
 
         [HttpPost]
-        public ActionResult<string> Generate([FromBody] string html) 
+        public ActionResult<byte[]> Generate([FromBody] string html) 
         {
             var workStream = new MemoryStream();
             var byteInfo = workStream.ToArray();
@@ -50,15 +43,10 @@ namespace PdfGenerator.Controllers
             };
 
             var doc = converter.ConvertHtmlString(html);
-
-            var contentRoot = _hostingEnvironment.ContentRootPath;
-
-            var path = Path.Combine(contentRoot, $"docs/test-{DateTime.Now:yy-MMM-dd ddd}.pdf");
-
-            doc.Save(path);
+            doc.Save(workStream);
             doc.Close();
 
-            return path;
+            return workStream.ToArray();
         }
 
     }
